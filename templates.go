@@ -9,9 +9,16 @@ import (
 	"net/http"
 	"path"
 	"time"
-
-	"github.com/labstack/echo/v4"
 )
+
+type Context interface {
+	// Request returns `*http.Request`.
+	Request() *http.Request
+	// HTMLBlob sends an HTTP blob response with status code.
+	HTMLBlob(code int, b []byte) error
+	// NoContent sends a response with no body and a status code.
+	NoContent(code int) error
+}
 
 // View stores the meta data for each view template, and whether it uses a layout.
 type View struct {
@@ -143,7 +150,7 @@ func (t *ViewRenderer) Add(patterns ...string) error {
 }
 
 // Render renders a template document.
-func (t *ViewRenderer) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
+func (t *ViewRenderer) Render(w io.Writer, name string, data interface{}, c Context) error {
 	t.logger.DebugCtx(c.Request().Context(), "Render", map[string]any{"name": name, "autoReload": t.autoReload})
 
 	start := time.Now()
@@ -173,7 +180,7 @@ func (t *ViewRenderer) Render(w io.Writer, name string, data interface{}, c echo
 }
 
 // RenderToHTMLBlob renders a template document to a HTML blob.
-func (t *ViewRenderer) RenderToHTMLBlob(c echo.Context, code int, name string, data any) error {
+func (t *ViewRenderer) RenderToHTMLBlob(c Context, code int, name string, data any) error {
 	buf := new(bytes.Buffer)
 	if err := t.Render(buf, name, data, c); err != nil {
 		return err

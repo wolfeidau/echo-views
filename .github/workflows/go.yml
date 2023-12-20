@@ -30,11 +30,12 @@ jobs:
       - name: Install tparse
         run: go install github.com/mfridman/tparse@latest
 
-      - name: Test
+      - name: Integration Tests
         env:
-          COVER_OPTS: "-coverprofile=coverage.txt -covermode=atomic"
+          COVER_OPTS: "-coverprofile=coverage.txt -covermode=atomic -coverpkg=github.com/wolfeidau/echo-views"
           GOFLAGS:  "-v -count=1 -json"
         run: go test $COVER_OPTS ./... | tparse -all -notests -format markdown >> $GITHUB_STEP_SUMMARY
+        working-directory: integration
 
       - name: Verify git clean
         shell: bash
