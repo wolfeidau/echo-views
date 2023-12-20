@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
-	"github.com/rs/zerolog/log"
 )
 
 // View stores the meta data for each view template, and whether it uses a layout.
@@ -28,6 +27,7 @@ type ViewRenderer struct {
 	autoReload    bool
 	templates     map[string]*View
 	templateFuncs template.FuncMap
+	logger        Logger
 }
 
 // Option is a functional option for configuring the ViewRenderer.
@@ -54,11 +54,19 @@ func WithFuncs(funcs template.FuncMap) Option {
 	}
 }
 
+// WithLogger sets the logger to use.
+func WithLogger(logger Logger) Option {
+	return func(r *ViewRenderer) {
+		r.logger = logger
+	}
+}
+
 // New creates a new ViewRenderer configured via the functional options.
 func New(opts ...Option) *ViewRenderer {
 	r := &ViewRenderer{
 		templates:     make(map[string]*View),
 		templateFuncs: template.FuncMap{},
+		logger:        &noopLogger{},
 	}
 
 	for _, opt := range opts {
@@ -136,14 +144,13 @@ func (t *ViewRenderer) Add(patterns ...string) error {
 
 // Render renders a template document.
 func (t *ViewRenderer) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
-	log.Ctx(c.Request().Context()).Debug().Str("name", name).Bool("autoReload", t.autoReload).Msg("Render")
+	t.logger.DebugCtx(c.Request().Context(), "Render", map[string]any{"name": name, "autoReload": t.autoReload})
 
 	start := time.Now()
 
 	tmpl, err := t.lookupTemplate(name)
 	if err != nil {
-		log.Ctx(c.Request().Context()).Error().Err(err).Str("name", name).Msg("failed to load template")
-
+		t.logger.ErrorCtx(c.Request().Context(), "failed to load template", err, map[string]any{"name": name})
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
@@ -155,11 +162,12 @@ func (t *ViewRenderer) Render(w io.Writer, name string, data interface{}, c echo
 
 	err = tmpl.template.ExecuteTemplate(w, execName, data)
 	if err != nil {
-		log.Ctx(c.Request().Context()).Error().Err(err).Str("name", tmpl.name).Str("layout", tmpl.layout).Msg("render template failed")
+		t.logger.ErrorCtx(c.Request().Context(), "failed to execute template", err, map[string]any{"name": tmpl.name, "layout": tmpl.layout})
+
 		return err
 	}
 
-	log.Ctx(c.Request().Context()).Debug().Str("name", tmpl.name).Str("dur", time.Since(start).String()).Str("layout", tmpl.layout).Msg("execute template")
+	t.logger.DebugCtx(c.Request().Context(), "Render complete", map[string]any{"name": name, "dur": time.Since(start).String(), "layout": tmpl.layout})
 
 	return nil
 }
@@ -193,10 +201,8 @@ func (t *ViewRenderer) lookupTemplate(name string) (*View, error) {
 
 func (t *ViewRenderer) compileTemplate(tmpl *View) (err error) {
 	templateName := path.Base(tmpl.name)
-	layoutName := path.Base(tmpl.layout)
 
-	log.Debug().Str("templateName", templateName).Str("layoutName", layoutName).Str("includes", tmpl.includes).Msg("register template")
-
+	t.logger.Debug("register template", map[string]any{"name": tmpl.name, "layout": tmpl.layout, "includes": tmpl.includes})
 	//
 	// the list of patterns varies depending on whether the template uses a layout or includes
 	//
@@ -214,8 +220,6 @@ func (t *ViewRenderer) compileTemplate(tmpl *View) (err error) {
 
 	// finally add the template itself
 	patterns = append(patterns, tmpl.name)
-
-	log.Debug().Strs("patterns", patterns).Msg("new template")
 
 	tmpl.template, err = template.New(templateName).Funcs(t.templateFuncs).ParseFS(t.fsys, patterns...)
 	if err != nil {
