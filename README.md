@@ -2,6 +2,11 @@
 
 This library provides a view renderer for the [echo](https://github.com/labstack/echo) web framework. I rewrote my existing template renderer so this is "inspired" by the https://github.com/wolfeidau/echo-go-templates.
 
+
+[![GitHub Actions status](https://github.com/wolfeidau/echo-views/workflows/Go/badge.svg?branch=main)](https://github.com/wolfeidau/lambda-go-extras/actions?query=workflow%3AGo)
+[![Go Report Card](https://goreportcard.com/badge/github.com/wolfeidau/echo-views)](https://goreportcard.com/report/github.com/wolfeidau/echo-views)
+[![Documentation](https://godoc.org/github.com/wolfeidau/echo-views?status.svg)](https://godoc.org/github.com/wolfeidau/echo-views)
+
 # Features
 
 * Provides a renderer for echo.
