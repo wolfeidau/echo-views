@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
-	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 )
 
@@ -73,7 +72,7 @@ func New(opts ...Option) *ViewRenderer {
 func (t *ViewRenderer) AddWithLayout(layout string, patterns ...string) error {
 	filenames, err := readFileNames(t.fsys, patterns...)
 	if err != nil {
-		return errors.Wrap(err, "failed to list using file pattern")
+		return fmt.Errorf("failed to list using file pattern: %w", err)
 	}
 
 	for _, f := range filenames {
@@ -95,7 +94,7 @@ func (t *ViewRenderer) AddWithLayout(layout string, patterns ...string) error {
 func (t *ViewRenderer) AddWithLayoutAndIncludes(layout, includes string, patterns ...string) error {
 	filenames, err := readFileNames(t.fsys, patterns...)
 	if err != nil {
-		return errors.Wrap(err, "failed to list using file pattern")
+		return fmt.Errorf("failed to list using file pattern: %w", err)
 	}
 
 	for _, f := range filenames {
@@ -118,7 +117,7 @@ func (t *ViewRenderer) AddWithLayoutAndIncludes(layout, includes string, pattern
 func (t *ViewRenderer) Add(patterns ...string) error {
 	filenames, err := readFileNames(t.fsys, patterns...)
 	if err != nil {
-		return errors.Wrap(err, "failed to read file names using file pattern")
+		return fmt.Errorf("failed to read file names using file pattern: %w", err)
 	}
 
 	for _, f := range filenames {
@@ -220,7 +219,7 @@ func (t *ViewRenderer) compileTemplate(tmpl *View) (err error) {
 
 	tmpl.template, err = template.New(templateName).Funcs(t.templateFuncs).ParseFS(t.fsys, patterns...)
 	if err != nil {
-		return errors.Wrapf(err, "failed to parse template %s", tmpl.name)
+		return fmt.Errorf("failed to parse template %s: %w", tmpl.name, err)
 	}
 
 	t.templates[templateName] = tmpl
@@ -234,7 +233,7 @@ func readFileNames(fsys fs.FS, patterns ...string) ([]string, error) {
 	for _, pattern := range patterns {
 		list, err := fs.Glob(fsys, pattern)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to list using file pattern")
+			return nil, fmt.Errorf("failed to list using file pattern: %w", err)
 		}
 
 		if len(list) == 0 {
