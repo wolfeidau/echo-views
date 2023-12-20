@@ -1,4 +1,4 @@
-package integration
+package templates_test
 
 import (
 	"bytes"
@@ -11,7 +11,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/require"
 	templates "github.com/wolfeidau/echo-views"
-	"github.com/wolfeidau/echo-views/integration/test/views"
+	"github.com/wolfeidau/echo-views/test/views"
 )
 
 func Test_CustomFuncs_AddWithLayout(t *testing.T) {

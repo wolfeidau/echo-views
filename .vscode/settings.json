@@ -1,6 +1,0 @@
-{
-    "go.testFlags": [
-        "-v",
-        "-coverpkg=github.com/wolfeidau/echo-views"
-    ]
-}

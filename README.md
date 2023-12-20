@@ -13,8 +13,6 @@ This library provides a view renderer for the [echo](https://github.com/labstack
 * Provides a simple template engine that supports layouts, includes, functions and standalone fragments.
 * Uses the go standard library's [html/template](https://pkg.go.dev/html/template) package.
 * Supports reloading of templates each time they are rendered, which is useful for development.
-* Internal logger interface to allow use of any logging library.
-* Use an interface to decouple from echo 
 
 # Usage
 
@@ -34,10 +32,6 @@ This library provides a view renderer for the [echo](https://github.com/labstack
 
     e.Renderer = viewRenderer
 ```
-
-# Testing
-
-
 
 # License
 
