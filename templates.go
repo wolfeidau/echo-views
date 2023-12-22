@@ -76,13 +76,9 @@ func New(opts ...Option) *ViewRenderer {
 	return r
 }
 
-// SetFS sets the filesystem to load templates from.
-func (t *ViewRenderer) SetFS(fsys fs.FS) {
+// UpdateFS sets the filesystem to load templates from and optionally enable auto-reload.
+func (t *ViewRenderer) UpdateFS(fsys fs.FS, autoReload bool) {
 	t.fsys = fsys
-}
-
-// SetAutoReload enables or disables automatically reloading templates when they change.
-func (t *ViewRenderer) SetAutoReload(autoReload bool) {
 	t.autoReload = autoReload
 }
 
