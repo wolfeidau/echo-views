@@ -61,8 +61,7 @@ func Test_AddWithLayout(t *testing.T) {
 			},
 		}))
 
-	render.SetAutoReload(true)
-	render.SetFS(views.Content)
+	render.UpdateFS(views.Content, true)
 
 	err := render.AddWithLayout("layout2.html", "pages/*.html")
 	assert.NoError(err)
