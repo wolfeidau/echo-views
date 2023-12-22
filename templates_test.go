@@ -2,6 +2,8 @@ package templates_test
 
 import (
 	"bytes"
+	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -22,6 +24,7 @@ func Test_CustomFuncs_AddWithLayout(t *testing.T) {
 	rec := httptest.NewRecorder()
 
 	render := templates.New(
+		templates.WithLogger(&testLogger{}),
 		templates.WithFS(views.Content),
 		templates.WithFuncs(template.FuncMap{
 			"getTime2": func() string {
@@ -51,12 +54,15 @@ func Test_AddWithLayout(t *testing.T) {
 	rec := httptest.NewRecorder()
 
 	render := templates.New(
-		templates.WithFS(views.Content),
+		templates.WithLogger(&testLogger{}),
 		templates.WithFuncs(template.FuncMap{
 			"getTime": func() string {
 				return time.Now().Format("15:04:05")
 			},
 		}))
+
+	render.SetAutoReload(true)
+	render.SetFS(views.Content)
 
 	err := render.AddWithLayout("layout2.html", "pages/*.html")
 	assert.NoError(err)
@@ -80,6 +86,7 @@ func Test_AddWithLayoutAndIncludes(t *testing.T) {
 	rec := httptest.NewRecorder()
 
 	render := templates.New(
+		templates.WithLogger(&testLogger{}),
 		templates.WithFS(views.Content),
 		templates.WithFuncs(template.FuncMap{
 			"getTime": func() string {
@@ -122,4 +129,16 @@ func Test_Add(t *testing.T) {
 
 	assert.Equal("data", output.String())
 	assert.Equal(200, rec.Result().StatusCode)
+}
+
+type testLogger struct{}
+
+func (l *testLogger) DebugCtx(ctx context.Context, msg string, fields map[string]any) {
+	fmt.Println(msg, fields)
+}
+func (l *testLogger) ErrorCtx(ctx context.Context, msg string, err error, fields map[string]any) {
+	fmt.Println(msg, err, fields)
+}
+func (l *testLogger) Debug(msg string, fields map[string]any) {
+	fmt.Println(msg, fields)
 }
