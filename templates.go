@@ -76,6 +76,16 @@ func New(opts ...Option) *ViewRenderer {
 	return r
 }
 
+// SetFS sets the filesystem to load templates from.
+func (t *ViewRenderer) SetFS(fsys fs.FS) {
+	t.fsys = fsys
+}
+
+// SetAutoReload enables or disables automatically reloading templates when they change.
+func (t *ViewRenderer) SetAutoReload(autoReload bool) {
+	t.autoReload = autoReload
+}
+
 // AddWithLayout register one or more templates using the provided layout.
 func (t *ViewRenderer) AddWithLayout(layout string, patterns ...string) error {
 	filenames, err := readFileNames(t.fsys, patterns...)
