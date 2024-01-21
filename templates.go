@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"net/http"
 	"path"
+	"sync"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -26,6 +27,7 @@ type ViewRenderer struct {
 	fsys          fs.FS
 	autoReload    bool
 	templates     map[string]*View
+	templatesLock sync.Mutex // avoid concurrent map writes
 	templateFuncs template.FuncMap
 	logger        Logger
 }
@@ -232,6 +234,8 @@ func (t *ViewRenderer) compileTemplate(tmpl *View) (err error) {
 		return fmt.Errorf("failed to parse template %s: %w", tmpl.name, err)
 	}
 
+	t.templatesLock.Lock()
+	defer t.templatesLock.Unlock()
 	t.templates[templateName] = tmpl
 
 	return nil
