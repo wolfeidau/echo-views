@@ -152,13 +152,15 @@ func (t *ViewRenderer) Add(patterns ...string) error {
 
 // Render renders a template document.
 func (t *ViewRenderer) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
-	t.logger.DebugCtx(c.Request().Context(), "Render", map[string]any{"name": name, "autoReload": t.autoReload})
+	ctx := c.Request().Context()
+
+	t.logger.DebugCtx(ctx, "Render", map[string]any{"name": name, "autoReload": t.autoReload})
 
 	start := time.Now()
 
 	tmpl, err := t.lookupTemplate(name)
 	if err != nil {
-		t.logger.ErrorCtx(c.Request().Context(), "failed to load template", err, map[string]any{"name": name})
+		t.logger.ErrorCtx(ctx, "failed to load template", err, map[string]any{"name": name})
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
@@ -170,12 +172,12 @@ func (t *ViewRenderer) Render(w io.Writer, name string, data interface{}, c echo
 
 	err = tmpl.template.ExecuteTemplate(w, execName, data)
 	if err != nil {
-		t.logger.ErrorCtx(c.Request().Context(), "failed to execute template", err, map[string]any{"name": tmpl.name, "layout": tmpl.layout})
+		t.logger.ErrorCtx(ctx, "failed to execute template", err, map[string]any{"name": tmpl.name, "layout": tmpl.layout})
 
 		return err
 	}
 
-	t.logger.DebugCtx(c.Request().Context(), "Render complete", map[string]any{"name": name, "dur": time.Since(start).String(), "layout": tmpl.layout})
+	t.logger.DebugCtx(ctx, "Render complete", map[string]any{"name": name, "dur": time.Since(start).String(), "layout": tmpl.layout})
 
 	return nil
 }
